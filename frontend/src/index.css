@@ -1,0 +1,134 @@
+:root {
+  --bg: #f9fafb;
+  --text: #0f172a;
+  --panel-bg: #ffffff;
+  --border: #e5e7eb;
+  --muted: #6b7280;
+  --hover: #f3f4f6;
+  --ring: #6366f1;
+  --shadow: 0 1px 2px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.1);
+}
+
+/* Dark theme */
+html[data-theme="dark"] {
+  --bg: #0b0f1a;
+  --text: #e5e7eb;
+  --panel-bg: #0f172a;
+  --border: #1f2937;
+  --muted: #9ca3af;
+  --hover: #111827;
+  --ring: #8b5cf6;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Layout */
+.container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(8px);
+  background: color-mix(in srgb, var(--panel-bg) 80%, transparent);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+}
+
+.brand {
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: .2px;
+}
+
+.toggle {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: inherit;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: .9rem;
+  cursor: pointer;
+}
+.toggle:hover { background: var(--hover); }
+.toggle:focus { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+.main {
+  padding: 24px 0;
+}
+
+.grid {
+  display: grid;
+  gap: 24px;
+}
+@media (min-width: 768px) {
+  .grid { grid-template-columns: 1fr 1fr; }
+}
+
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.h2 {
+  margin: 0 0 2px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.sub {
+  margin: 0;
+  font-size: .78rem;
+  color: var(--muted);
+}
+
+.select {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .9rem;
+}
+select.select-el {
+  appearance: none;
+  background: transparent;
+  color: inherit;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px 10px;
+}
+select.select-el:focus { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+.placeholder {
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  font-size: .9rem;
+  color: var(--muted);
+}

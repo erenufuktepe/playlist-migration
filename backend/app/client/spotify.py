@@ -12,29 +12,33 @@ class SpotifyClient:
         return {"Authorization": f"Bearer {token}"}
     
     async def _request(self, method: str, endpoint: str, **kwargs) -> httpx.Response:
-        client  = await get_async_client()
+        client = await get_async_client()
         url = f"{self.base_url}/{endpoint}"
         headers = kwargs.pop("headers", {})
+        # attach auth headers
         headers.update(await self._auth_headers())
-        
+
         response = await client.request(method, url, headers=headers, **kwargs)
-        
+
+        # 401: token may be expired or invalid — refresh once and retry
         if response.status_code == 401:
-            # Token might be expired, force refresh and retry once
-            await token_manager.force_refresh()
-            headers = { "Authorization": f"Bearer {await token_manager.get_token()}" }
-            headers.update(await self._auth_headers())
-            
+            try:
+                await token_manager.force_refresh()
+            except Exception:
+                # let the caller see the original 401 if token refresh fails
+                pass
+            headers = await self._auth_headers()
             response = await client.request(method, url, headers=headers, **kwargs)
-            
+
+        # 429: rate limited — respect Retry-After and retry once
         if response.status_code == 429:
-            retry_after = int(r.headers.get("Retry-After", "1"))
+            retry_after = int(response.headers.get("Retry-After", "1"))
             await asyncio.sleep(max(retry_after, 1))
+            # refresh auth headers in case token rotated
+            headers = await self._auth_headers()
             response = await client.request(method, url, headers=headers, **kwargs)
-            headers = { "Authorization": f"Bearer {await token_manager.get_token()}" }
-            
-            response = await client.request(method, url, headers=headers, **kwargs)
-            
+
+        # surface HTTP errors
         response.raise_for_status()
         return response
 

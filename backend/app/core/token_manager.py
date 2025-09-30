@@ -46,7 +46,10 @@ class TokenManager:
         auth = (settings.SPOTIFY_CLIENT_ID, settings.SPOTIFY_CLIENT_SECRET)
 
         resp = await client.post("https://accounts.spotify.com/api/token", data=data, auth=auth)
-        resp.raise_for_status()
+        if resp.status_code != 200:
+            # include response body in the error to aid debugging (client id/secret issues)
+            text = resp.text
+            raise RuntimeError(f"failed to get token from spotify: {resp.status_code} {text}")
         payload = resp.json()
 
         # Common fields: access_token + expires_in (seconds)
@@ -58,7 +61,6 @@ class TokenManager:
         expires_at = datetime.now(timezone.utc) + timedelta(seconds=max(expires_in - skew, 1))
 
         self._token = Token(access_token=access_token, expires_at=expires_at)
-        print(access_token, expires_at)
 
 # Singleton for app
 token_manager = TokenManager()

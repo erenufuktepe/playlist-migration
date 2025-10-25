@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .core.config import settings
-from .routes.routes_spotify import router as spotify_router
+from .routes.spotify_routes import router as spotify_router
 
 
 app = FastAPI(title="Playlist Migration API")

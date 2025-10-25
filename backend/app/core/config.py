@@ -7,6 +7,7 @@ class Settings(BaseSettings):
 
     TOKEN_REFRESH_SKEW: int = 60
 
+    SPOTIFY_ENDPOINT: str
     SPOTIFY_CLIENT_ID: str
     SPOTIFY_CLIENT_SECRET: str
     SPOTIFY_REDIRECT_URI: str

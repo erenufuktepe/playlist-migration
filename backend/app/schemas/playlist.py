@@ -1,10 +1,10 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import List
 from .track import Track
 
 
 class Playlist(BaseModel):
-    id: Optional[str] = None
+    id: str 
     name: str
     tracks: List[Track] = []
 

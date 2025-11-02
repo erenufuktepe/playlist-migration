@@ -9,3 +9,11 @@ class Playlist(BaseModel):
     tracks: List[Track] = []
 
     model_config = {"extra": "ignore"}
+    
+    
+class PlaylistCreateRequest(BaseModel):
+    name: str
+    description: str = ""
+    public: bool = True
+    
+    model_config = {"extra": "ignore"}

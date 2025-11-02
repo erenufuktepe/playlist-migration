@@ -1,11 +1,15 @@
+import logging
 import secrets
-from typing import Mapping, Optional
+from typing import Mapping
 from urllib.parse import urlencode
 
 from app.core.config import settings
 from app.core.http import get_async_client
 from app.core.token_provider import TokenProvider
 from fastapi import Request
+from httpcore import request
+
+logger = logging.getLogger(__name__)
 
 SPOTIFY_SCOPES = [
     "playlist-modify-public",
@@ -26,14 +30,28 @@ class SpotifyTokenProvider(TokenProvider):
         self.client_secret = settings.SPOTIFY_CLIENT_SECRET
         self.scopes = " ".join(SPOTIFY_SCOPES)
         self.state = secrets.token_urlsafe(32)
-        self.code: str = None
         self._refresh_token: str = None
 
-    async def fetch_token(self) -> Mapping[str, object]:
+    async def handle_callback(self, request: Request) -> str:
+        """
+        Validate returned state against expected_state (use secrets.compare_digest) and return authorization code.
+        Raises SpotifyTokenProviderException on mismatch or missing code.
+        """
+        if request.query_params.get("state") != self.state:
+            raise SpotifyTokenProviderException("Invalid state parameter")
+
+        code = request.query_params.get("code")
+        if not code:
+            raise SpotifyTokenProviderException(
+                "Missing authorization code in callback"
+            )
+        return code
+
+    async def fetch_token(self, code: str) -> Mapping[str, object]:
         client = await get_async_client()
         data = {
             "grant_type": "authorization_code",
-            "code": self.code,
+            "code": code,
             "redirect_uri": settings.REDIRECT_URL,
         }
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
@@ -44,6 +62,7 @@ class SpotifyTokenProvider(TokenProvider):
             auth=(self.client_id, self.client_secret),
         )
         response.raise_for_status()
+
         response = response.json()
         self._refresh_token = response.get("refresh_token")
         return response
@@ -63,11 +82,6 @@ class SpotifyTokenProvider(TokenProvider):
         self.refresh_token = response.get("refresh_token")
         return response
 
-    async def handle_authorization_code(self, request: Request) -> None:
-        self.code = request.query_params.get("code")
-        if request.query_params.get("state") != self.state:
-            raise SpotifyTokenProviderException("Invalid state parameter")
-
     async def build_authorization_url(self) -> str:
         state = secrets.token_urlsafe(32)
         self.state = state
@@ -79,6 +93,5 @@ class SpotifyTokenProvider(TokenProvider):
             "scope": self.scopes,
             "state": self.state,
         }
-        return (
-            f"{self.url}/authorize?{urlencode(params, safe=':/').replace('+', '%20')}"
-        )
+        url = f"{self.url}/authorize?{urlencode(params, safe=':/').replace('+', '%20')}"
+        return url

@@ -14,7 +14,7 @@ def get_spotify_service() -> SpotifyService:
     return spotify_service
 
 
-@router.get("/playlist/{playlist_id}")
+@router.get("/playlist/{playlist_id}", tags=["playlist"])
 async def get_playlist(
     playlist_id: str, service: SpotifyService = Depends(get_spotify_service)
 ):
@@ -24,7 +24,7 @@ async def get_playlist(
         raise HTTPException(status_code=502, detail="Upstream service error")
 
 
-@router.get("/authorization-url")
+@router.get("/authorization-url", tags=["authorization"])
 async def get_authorization_url(service: SpotifyService = Depends(get_spotify_service)):
     try:
         return await service.get_authorization_url()
@@ -32,18 +32,18 @@ async def get_authorization_url(service: SpotifyService = Depends(get_spotify_se
         raise HTTPException(status_code=502, detail="Upstream service error")
 
 
-@router.get("/callback")
+@router.get("/callback", tags=["authorization"])
 async def spotify_callback(
     request: Request, service: SpotifyService = Depends(get_spotify_service)
 ):
     try:
-        await service.authorize_user(request)
+        await service.handle_callback(request)
         return RedirectResponse(f"{settings.FRONTEND_HOST}?auth=success")
     except SpotifyServiceError:
         raise HTTPException(status_code=502, detail="Upstream service error")
 
 
-@router.post("/create-playlist", status_code=201)
+@router.post("/create-playlist", status_code=201, tags=["playlist"])
 async def create_playlist(
     request: PlaylistCreateRequest,
     service: SpotifyService = Depends(get_spotify_service),
@@ -54,7 +54,7 @@ async def create_playlist(
         raise HTTPException(status_code=502, detail="Upstream service error")
 
 
-@router.get("/search-track")
+@router.get("/search-track", tags=["search"])
 async def search_track(
     artist: str, track: str, service: SpotifyService = Depends(get_spotify_service)
 ):
@@ -64,7 +64,7 @@ async def search_track(
         raise HTTPException(status_code=502, detail="Upstream service error")
 
 
-@router.post("/playlist/{playlist_id}/add-tracks", status_code=204)
+@router.post("/playlist/{playlist_id}/add-tracks", status_code=204, tags=["playlist"])
 async def add_tracks_to_playlist(
     playlist_id: str,
     track_uris: list[str],

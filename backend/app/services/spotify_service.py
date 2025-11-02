@@ -1,6 +1,6 @@
 import logging
 
-from app.client.spotify_client import SpotifyClient
+from app.client.spotify_client import SpotifyClient, get_spotify_client
 from app.converters.play_list_converter import PlayListConverter
 from app.schemas.playlist import Playlist, PlaylistCreateRequest
 from fastapi import Request
@@ -13,8 +13,8 @@ class SpotifyServiceError(Exception):
 
 
 class SpotifyService:
-    def __init__(self, spotify_client: SpotifyClient = None):
-        self.spotify_client = spotify_client or SpotifyClient()
+    def __init__(self, spotify_client: SpotifyClient = get_spotify_client()):
+        self.spotify_client = spotify_client
 
     async def get_authorization_url(self) -> str:
         try:
@@ -26,13 +26,12 @@ class SpotifyService:
                 "Failed to get Spotify authorization URL"
             ) from exception
 
-    async def authorize_user(self, request: Request) -> str:
+    async def handle_callback(self, request: Request) -> None:
         try:
-            await self.spotify_client.authorize(request)
+            await self.spotify_client.handle_callback(request)
         except Exception as exception:
-            logger.error("Failed to get Spotify authorization URL")
             raise SpotifyServiceError(
-                "Failed to get Spotify authorization URL"
+                "Failed to handle Spotify callback"
             ) from exception
 
     async def get_playlist(self, playlist_id: str) -> Playlist:

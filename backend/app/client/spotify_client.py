@@ -5,11 +5,10 @@ from app.client.base_client import BaseClient
 from app.client.spotify_token_provider import SpotifyTokenProvider
 from app.core.config import settings
 from app.core.token_manager import TokenManager
-
-logger = logging.getLogger(__name__)
-
 from app.schemas.playlist import PlaylistCreateRequest
 from fastapi import Request
+
+logger = logging.getLogger(__name__)
 
 
 class SpotifyClientException(Exception):
@@ -34,6 +33,10 @@ class SpotifyClient(BaseClient):
 
     async def authorize(self, request: Request):
         await self._token_manager.set_code(request)
+
+    async def handle_callback(self, request: Request) -> None:
+        await self._token_manager.handle_callback(request)
+        pass
 
     # ====== Public Spotify API methods =======
 

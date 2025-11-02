@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 class Settings(BaseSettings):
     APP_HOST: str = "127.0.0.1"
     APP_PORT: int = 8000
@@ -22,5 +23,6 @@ class Settings(BaseSettings):
     APPLE_TOKEN_TTL_SECONDS: int = 3600
 
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
+
 
 settings = Settings()

@@ -1,22 +1,27 @@
 import logging
 from urllib.parse import urlencode
+
 from app.client.base_client import BaseClient
-from app.core.token_manager import TokenManager
-from app.core.config import settings
 from app.client.spotify_token_provider import SpotifyTokenProvider
+from app.core.config import settings
+from app.core.token_manager import TokenManager
 
 logger = logging.getLogger(__name__)
 
-from fastapi import Request
-
 from app.schemas.playlist import PlaylistCreateRequest
+from fastapi import Request
 
 
 class SpotifyClientException(Exception):
-    pass 
+    pass
+
 
 class SpotifyClient(BaseClient):
-    def __init__(self, base_url: str = settings.SPOTIFY_ENDPOINT, _token_manager: TokenManager = None):
+    def __init__(
+        self,
+        base_url: str = settings.SPOTIFY_ENDPOINT,
+        _token_manager: TokenManager = None,
+    ):
         self.base_url = base_url
         self._token_manager = _token_manager or TokenManager(SpotifyTokenProvider())
 
@@ -26,7 +31,7 @@ class SpotifyClient(BaseClient):
 
     async def get_authorization_url(self) -> str:
         return await self._token_manager._provider.build_authorization_url()
-    
+
     async def authorize(self, request: Request):
         await self._token_manager.set_code(request)
 
@@ -43,7 +48,9 @@ class SpotifyClient(BaseClient):
             return response.json()
         except Exception as exception:
             logger.error(f"Failed to get playlist: {playlist_id}")
-            raise SpotifyClientException(f"Failed to get playlist: {playlist_id}") from exception
+            raise SpotifyClientException(
+                f"Failed to get playlist: {playlist_id}"
+            ) from exception
 
     async def get_current_user(self) -> dict:
         """
@@ -56,7 +63,9 @@ class SpotifyClient(BaseClient):
             return response.json()
         except Exception as exception:
             logger.error(f"Failed to get current user profile: {exception}")
-            raise SpotifyClientException(f"Failed to get current user profile: {exception}") from exception
+            raise SpotifyClientException(
+                f"Failed to get current user profile: {exception}"
+            ) from exception
 
     async def create_playlist(self, request: PlaylistCreateRequest) -> dict:
         """
@@ -69,7 +78,7 @@ class SpotifyClient(BaseClient):
             data = {
                 "name": request.name,
                 "description": request.description,
-                "public": request.public
+                "public": request.public,
             }
             response = await self.post(f"users/{user['id']}/playlists", json=data)
             response.raise_for_status()
@@ -78,7 +87,6 @@ class SpotifyClient(BaseClient):
             logger.error(f"Failed to create playlist: {exception}")
             raise SpotifyClientException("Failed to create playlist") from exception
 
-    
     async def search_track(self, query: str, limit: int = 1) -> dict:
         """
         Search for tracks in the Spotify catalog.
@@ -94,7 +102,6 @@ class SpotifyClient(BaseClient):
             logger.error(f"Failed to search tracks: {exception}")
             raise SpotifyClientException("Failed to search tracks") from exception
 
-
     async def add_tracks_to_playlist(self, playlist_id: str, track_uris: list) -> dict:
         """
         Add tracks to a Spotify playlist.
@@ -107,10 +114,13 @@ class SpotifyClient(BaseClient):
             return response.json()
         except Exception as exception:
             logger.error(f"Failed to add tracks to playlist: {exception}")
-            raise SpotifyClientException("Failed to add tracks to playlist") from exception
+            raise SpotifyClientException(
+                "Failed to add tracks to playlist"
+            ) from exception
 
 
 def get_spotify_client() -> SpotifyClient:
     return _spotify_client
+
 
 _spotify_client = SpotifyClient()

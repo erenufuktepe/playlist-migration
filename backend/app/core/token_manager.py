@@ -1,10 +1,12 @@
-from datetime import datetime, timezone, timedelta
 import asyncio
+from datetime import datetime, timedelta, timezone
 from typing import Optional
+
+from app.client.spotify_token_provider import SpotifyTokenProvider
 from app.core.config import settings
 from app.core.token_provider import TokenProvider
 from fastapi import Request
-from app.client.spotify_token_provider import SpotifyTokenProvider
+
 
 class Token:
     def __init__(self, access_token: str, expires_at: datetime):
@@ -17,15 +19,17 @@ class Token:
 
 class TokenManager:
     def __init__(self, provider: Optional[TokenProvider] = None):
-            self._token: Optional[Token] = None
-            self._lock = asyncio.Lock()
-            self._provider = provider
+        self._token: Optional[Token] = None
+        self._lock = asyncio.Lock()
+        self._provider = provider
 
     async def set_code(self, request: Request) -> None:
         if isinstance(self._provider, SpotifyTokenProvider):
             await self._provider.handle_authorization_code(request)
         else:
-            raise NotImplementedError("TokenManager only supports SpotifyTokenProvider at this time.")
+            raise NotImplementedError(
+                "TokenManager only supports SpotifyTokenProvider at this time."
+            )
 
     async def get_token(self) -> str:
         if not self._token:
@@ -33,10 +37,12 @@ class TokenManager:
             access_token = payload["access_token"]
             expires_in = int(payload.get("expires_in", 3600))
             skew = int(getattr(settings, "TOKEN_REFRESH_SKEW", 60))
-            expires_at = datetime.now(timezone.utc) + timedelta(seconds=max(expires_in - skew, 1))
+            expires_at = datetime.now(timezone.utc) + timedelta(
+                seconds=max(expires_in - skew, 1)
+            )
             self._token = Token(access_token=access_token, expires_at=expires_at)
             return self._token.access_token
-        
+
         if self._token and self._token.is_valid():
             return self._token.access_token
 
@@ -56,5 +62,7 @@ class TokenManager:
         access_token = payload["access_token"]
         expires_in = int(payload.get("expires_in", 3600))
         skew = int(getattr(settings, "TOKEN_REFRESH_SKEW", 60))
-        expires_at = datetime.now(timezone.utc) + timedelta(seconds=max(expires_in - skew, 1))
+        expires_at = datetime.now(timezone.utc) + timedelta(
+            seconds=max(expires_in - skew, 1)
+        )
         self._token = Token(access_token=access_token, expires_at=expires_at)

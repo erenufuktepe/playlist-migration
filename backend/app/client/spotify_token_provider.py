@@ -1,18 +1,23 @@
-from typing import Mapping, Optional
-from app.core.http import get_async_client
-from app.core.config import settings
 import secrets
+from typing import Mapping, Optional
 from urllib.parse import urlencode
+
+from app.core.config import settings
+from app.core.http import get_async_client
+from app.core.token_provider import TokenProvider
 from fastapi import Request
 
-from app.core.token_provider import TokenProvider
-
-
-SPOTIFY_SCOPES = ["playlist-modify-public", "playlist-modify-private", "user-read-private", "user-read-email"]
+SPOTIFY_SCOPES = [
+    "playlist-modify-public",
+    "playlist-modify-private",
+    "user-read-private",
+    "user-read-email",
+]
 
 
 class SpotifyTokenProviderException(Exception):
     pass
+
 
 class SpotifyTokenProvider(TokenProvider):
     def __init__(self):
@@ -23,17 +28,21 @@ class SpotifyTokenProvider(TokenProvider):
         self.state = secrets.token_urlsafe(32)
         self.code: str = None
         self._refresh_token: str = None
-        
-        
+
     async def fetch_token(self) -> Mapping[str, object]:
         client = await get_async_client()
         data = {
-            "grant_type": "authorization_code", 
-            "code": self.code, 
-            "redirect_uri": settings.REDIRECT_URL
+            "grant_type": "authorization_code",
+            "code": self.code,
+            "redirect_uri": settings.REDIRECT_URL,
         }
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        response = await client.post(f"{self.url}/api/token", data=data, headers=headers, auth=(self.client_id, self.client_secret))
+        response = await client.post(
+            f"{self.url}/api/token",
+            data=data,
+            headers=headers,
+            auth=(self.client_id, self.client_secret),
+        )
         response.raise_for_status()
         response = response.json()
         self._refresh_token = response.get("refresh_token")
@@ -43,7 +52,12 @@ class SpotifyTokenProvider(TokenProvider):
         client = await get_async_client()
         data = {"grant_type": "refresh_token", "refresh_token": self._refresh_token}
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        response = await client.post(f"{self.url}/api/token", data=data, headers=headers, auth=(self.client_id, self.client_secret))
+        response = await client.post(
+            f"{self.url}/api/token",
+            data=data,
+            headers=headers,
+            auth=(self.client_id, self.client_secret),
+        )
         response.raise_for_status()
         response = response.json()
         self.refresh_token = response.get("refresh_token")
@@ -63,6 +77,8 @@ class SpotifyTokenProvider(TokenProvider):
             "response_type": "code",
             "redirect_uri": settings.REDIRECT_URL,
             "scope": self.scopes,
-            "state": self.state
+            "state": self.state,
         }
-        return f"{self.url}/authorize?{urlencode(params, safe=':/').replace('+', '%20')}"
+        return (
+            f"{self.url}/authorize?{urlencode(params, safe=':/').replace('+', '%20')}"
+        )

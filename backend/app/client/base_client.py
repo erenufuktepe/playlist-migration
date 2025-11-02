@@ -1,16 +1,17 @@
-from abc import ABC, abstractmethod
 import asyncio
-from typing import Dict, Any
+from abc import ABC, abstractmethod
+from typing import Any, Dict
+
 import httpx
 from app.core.http import get_async_client
+
 
 class BaseClient(ABC):
     def __init__(self, base_url: str):
         self.base_url = base_url.rstrip("/")
 
     @abstractmethod
-    async def _auth_headers(self) -> Dict[str, str]:
-        ...
+    async def _auth_headers(self) -> Dict[str, str]: ...
 
     async def _on_401(self) -> None:
         """Hook subclasses can override to refresh tokens on 401."""
@@ -19,7 +20,9 @@ class BaseClient(ABC):
     async def _get_client(self) -> httpx.AsyncClient:
         return await get_async_client()
 
-    async def _request(self, method: str, endpoint: str, **kwargs: Any) -> httpx.Response:
+    async def _request(
+        self, method: str, endpoint: str, **kwargs: Any
+    ) -> httpx.Response:
         client = await self._get_client()
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
         headers = kwargs.pop("headers", {}) or {}
@@ -57,4 +60,3 @@ class BaseClient(ABC):
 
     async def delete(self, endpoint: str, **kwargs: Any) -> httpx.Response:
         return await self._request("DELETE", endpoint, **kwargs)
-    

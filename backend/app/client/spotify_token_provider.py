@@ -1,13 +1,12 @@
 import logging
 import secrets
-from typing import Mapping
+from typing import Mapping, Optional
 from urllib.parse import urlencode
 
 from app.core.config import settings
 from app.core.http import get_async_client
 from app.core.token_provider import TokenProvider
 from fastapi import Request
-from httpcore import request
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +46,9 @@ class SpotifyTokenProvider(TokenProvider):
             )
         return code
 
-    async def fetch_token(self, code: str) -> Mapping[str, object]:
+    async def fetch_token(self, code: Optional[str]) -> Mapping[str, object]:
+        if not code:
+            raise SpotifyTokenProviderException("Authorization code is required")
         client = await get_async_client()
         data = {
             "grant_type": "authorization_code",

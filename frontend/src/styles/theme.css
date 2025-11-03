@@ -1,0 +1,31 @@
+:root {
+  --bg: #0b0f1a;
+  --fg: #e5e7eb;
+  --card: #0f172a;
+  --muted: #9aa2b1;
+  --border: #1f2937;
+  --accent: #7c3aed;
+  --ok: #22c55e;
+  --error: #ef4444;
+}
+
+:root.theme-light {
+  --bg: #f7fafc;
+  --fg: #0b1220;
+  --card: #ffffff;
+  --muted: #5b6577;
+  --border: #d8dee9;
+  --accent: #5b21b6;
+  --ok: #16a34a;
+  --error: #dc2626;
+}
+
+html, body, #root {
+  height: 100%;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 14px/1.5 ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji;
+}

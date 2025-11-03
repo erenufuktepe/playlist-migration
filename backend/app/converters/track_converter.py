@@ -13,7 +13,11 @@ class TrackConverter:
     @staticmethod
     def from_spotify_track(spotify_track_data: dict) -> Track:
         try:
-            spotify_track_data = spotify_track_data.get("track", spotify_track_data)
+            spotify_track_data = (
+                spotify_track_data.get("track", spotify_track_data)
+                if "track" in spotify_track_data.keys()
+                else spotify_track_data
+            )
             track_data = {
                 "id": spotify_track_data.get("id"),
                 "name": spotify_track_data.get("name"),
@@ -23,14 +27,10 @@ class TrackConverter:
                 ],
             }
             return Track.model_validate(track_data)
-        except Exception as exception:
-            logger.error(
-                f"Error converting spotify track id: {spotify_track_data.get('id')}",
-                exc_info=exception,
-            )
+        except Exception as exc:
             raise TrackConverterException(
-                f"Fail to convert spotify track id: {spotify_track_data.get('id')}"
-            ) from exception
+                f"Fail to convert spotify track id {spotify_track_data.get('id')} : {exc}"
+            ) from exc
 
     @staticmethod
     def from_spotify_tracks(spotify_tracks_data: list[dict]) -> list[Track]:

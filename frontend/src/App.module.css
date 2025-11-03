@@ -1,0 +1,46 @@
+.wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 960px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.migrateBar {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.migrateBtn {
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: white;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  font-weight: 600;
+  opacity: 0.95;
+}
+
+.migrateBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

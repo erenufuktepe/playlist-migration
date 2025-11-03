@@ -23,9 +23,17 @@ class TokenManager:
         self._lock = asyncio.Lock()
         self._provider = provider
 
-    async def set_code(self, request: Request) -> None:
+    async def handle_callback(self, request: Request) -> None:
         if isinstance(self._provider, SpotifyTokenProvider):
-            await self._provider.handle_authorization_code(request)
+            code = await self._provider.handle_callback(request)
+            payload = await self._provider.fetch_token(code)
+            access_token = payload["access_token"]
+            expires_in = int(payload.get("expires_in", 3600))
+            skew = int(getattr(settings, "TOKEN_REFRESH_SKEW", 60))
+            expires_at = datetime.now(timezone.utc) + timedelta(
+                seconds=max(expires_in - skew, 1)
+            )
+            self._token = Token(access_token=access_token, expires_at=expires_at)
         else:
             raise NotImplementedError(
                 "TokenManager only supports SpotifyTokenProvider at this time."

@@ -12,7 +12,7 @@ class PlayListConverterException(Exception):
 
 class PlayListConverter:
     @staticmethod
-    def from_spotify(spotify_playlist_data: dict) -> Playlist:
+    def from_spotify_playlist(spotify_playlist_data: dict) -> Playlist:
         try:
             return Playlist.model_validate(
                 {
@@ -23,11 +23,7 @@ class PlayListConverter:
                     ),
                 }
             )
-        except Exception as exception:
-            logger.error(
-                f"Error converting spotify playlist id: {spotify_playlist_data.get('id')}",
-                exc_info=exception,
-            )
+        except Exception as exc:
             raise PlayListConverterException(
-                f"Fail to convert spotify playlist id: {spotify_playlist_data.get('id')}"
-            ) from exception
+                f"Fail to convert spotify playlist id {spotify_playlist_data.get('id')} : {exc}"
+            ) from exc

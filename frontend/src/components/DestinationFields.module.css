@@ -1,0 +1,29 @@
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.input, .textarea {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--fg);
+}
+
+.textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.85rem;
+}

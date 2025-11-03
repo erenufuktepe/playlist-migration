@@ -118,6 +118,19 @@ class SpotifyClient(BaseClient):
                 f"Failed to add tracks to playlist {playlist_id}: {exc}"
             ) from exc
 
+    async def get_playlists(self) -> dict:
+        """
+        Get a list of the playlists owned or followed by the current Spotify user.
+        Docs: https://developer.spotify.com/documentation/web-api/reference/get-list-users-playlists
+        """
+        try:
+            user = await self.get_current_user()
+            response = await self.get(f"/users/{user['id']}/playlists")
+            response.raise_for_status()
+            return response.json()
+        except Exception as exc:
+            raise SpotifyClientException(f"Failed to get playlists: {exc}") from exc
+
 
 def get_spotify_client() -> SpotifyClient:
     return _spotify_client

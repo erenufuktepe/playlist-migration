@@ -46,9 +46,7 @@ class SpotifyService:
         try:
             logger.info(f"Fetching playlist from Spotify for ID: {playlist_id}")
             response = await self.spotify_client.get_playlist(playlist_id)
-            playlist = PlayListConverter.from_spotify_playlist(
-                response.get("tracks", {})
-            )
+            playlist = PlayListConverter.from_spotify_playlist(response)
             return playlist
         except Exception as exc:
             raise SpotifyServiceError(exc) from exc
@@ -88,5 +86,19 @@ class SpotifyService:
             logger.info(f"Adding tracks to playlist on Spotify with ID: {playlist_id}")
             track_uris = [f"spotify:track:{track_uri}" for track_uri in track_uris]
             await self.spotify_client.add_tracks_to_playlist(playlist_id, track_uris)
+        except Exception as exc:
+            raise SpotifyServiceError(exc) from exc
+
+    async def get_playlists(self) -> list[Playlist]:
+        """Get all playlists for the current user."""
+        try:
+            logger.info("Fetching all playlists for current Spotify user")
+            response = await self.spotify_client.get_playlists()
+            playlists_data = response.get("items", [])
+            playlists = [
+                PlayListConverter.from_spotify_playlist(playlist)
+                for playlist in playlists_data
+            ]
+            return playlists
         except Exception as exc:
             raise SpotifyServiceError(exc) from exc

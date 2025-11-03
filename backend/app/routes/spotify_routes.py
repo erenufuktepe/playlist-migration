@@ -98,3 +98,16 @@ async def add_tracks_to_playlist(
             status_code=502,
             detail={"error": "Upstream service error", "details": str(exc)},
         ) from exc
+
+
+@router.get("/playlists")
+async def get_playlists(
+    service: SpotifyService = Depends(get_spotify_service),
+) -> list[Playlist]:
+    try:
+        return await service.get_playlists()
+    except SpotifyServiceError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail={"error": "Upstream service error", "details": str(exc)},
+        ) from exc
